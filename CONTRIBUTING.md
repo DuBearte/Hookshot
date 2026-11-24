@@ -39,13 +39,13 @@ break. Claim in Discord #dev-work before you start.
 |---|---|
 | **Test on other hardware** | NVIDIA cards are the most tested; the README's [status table](readme.md#project-status) says what works where, and [tested configurations](docs/tested-configurations.md) lists the runs behind it (build, hardware, driver, where, fps). Reports from AMD and Intel cards, other NVIDIA drivers, other distributions and SteamOS are useful even when everything works: add a row there. |
 | **Play further** | The tested area is the start of the game. Reaching new areas, cutscenes, menus and items finds problems the developer has not seen. |
-| **Report what is broken** | Use the [issue forms](https://git.notrexed.dev/Hookshot/Hookshot/issues/new/choose): game problem, build problem or idea. Include the version, your hardware, where you were and `hookshot_log.txt`. |
+| **Report what is broken** | Use the [issue forms](https://github.com/eumarcodev/Hookshot/issues/new/choose): game problem, build problem or idea. Include the version, your hardware, where you were and `hookshot_log.txt`. |
 | **Send a fix** | Fork, fix, test, open a pull request. Small, focused changes are easiest to review and merge. |
 | **Improve the docs** | The README, the development guide and the design notes are part of the project. Corrections and clearer steps are welcome. |
 
 ## Before you open an issue or a PR
 
-- Try the [newest release](https://git.notrexed.dev/Hookshot/Hookshot/releases/latest) first. It includes every fix before it.
+- Try the [newest release](https://github.com/eumarcodev/Hookshot/releases/latest) first. It includes every fix before it.
 - Search the open issues. If yours is already there, add your details instead of opening another.
 - English, please.
 - One topic per issue or pull request. Do not mix a fix with a refactor or a batch of unrelated changes.
@@ -295,7 +295,11 @@ the development guide's [reference](docs/development.md#switches-for-testing-and
 5. Include screenshots when the change shows on screen: graphics, the menu, the start-up screen, an overlay, a
    message. Before and after for a fix, the new screen for a feature, and the sizes or settings it was checked at. A
    screenshot of the game is fine; the rule above is about game files, not pictures of the game.
-6. Run the relevant checks. CI must pass; a change that only works on your machine is not ready. CI has no game, so
+6. **Run `python -I scripts/preflight.py` before you open the PR, every time** (once, `--setup` fetches what it needs
+   into `_deps/`). It builds the renderer the way CI's Windows job does, checks the DLL's imports, and runs every
+   game-free check here and on `develop`, so a PR does not find its build error or its new failing check in CI. Paste
+   its summary in the description; a step it could not run (no compiler, no network) is named there, not left out.
+   The Linux AppImage job and the Linux runs of the checks stay CI's. Run the relevant checks. CI must pass; a change that only works on your machine is not ready. CI has no game, so
    also run the change in the game and put what you measured in the description: before and after on the same
    scene for a performance change, the bug gone for a fix. An untested change is opened as a draft.
 7. Rebase or merge `main` when it has moved, and resolve conflicts in your branch rather than in the review.
@@ -343,9 +347,9 @@ NVIDIA's DLSS SDK is not one of them: it is never in the repository, and nothing
 
 ## Where to talk
 
-- **Issues:** [use the forms](https://git.notrexed.dev/Hookshot/Hookshot/issues/new/choose).
+- **Issues:** [use the forms](https://github.com/eumarcodev/Hookshot/issues/new/choose).
 - **Discord:** https://discord.gg/rexed. Use the `dev-work` channel for prs.
-- **Newest release:** https://git.notrexed.dev/Hookshot/Hookshot/releases/latest
+- **Newest release:** https://github.com/eumarcodev/Hookshot/releases/latest
 
 Thanks for testing, reporting and sending fixes. Every report from a different GPU and every area played further than
 before moves the port forward.
