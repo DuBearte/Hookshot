@@ -251,7 +251,7 @@ The release notes end with a short table of which file to download, and what the
 (`scripts/release_files.sh table`).
 
 The AppImage carries update information (`scripts/linux/appimage.sh`):
-`gh-releases-zsync|NotRexed|Hookshot|latest|Hookshot-*-x86_64.AppImage.zsync` for a release, `rc` in place of `latest`
+`gh-releases-zsync|eumarcodev|Hookshot|latest|Hookshot-*-x86_64.AppImage.zsync` for a release, `rc` in place of `latest`
 for a release candidate and `nightly` for the nightly, the repository being the one CI runs in. appimagetool writes it into the image and makes the `.zsync`, whose file URL is the AppImage's name beside it on the
 same release. `./Hookshot-v<version>-x86_64.AppImage --appimage-updateinformation` prints it.
 
@@ -272,6 +272,29 @@ AppImage and Windows builder workflows, which make its release, with GitHub's ge
 `SHA256SUMS` and the table. A tag with a prerelease part is a prerelease. release-please is not involved, and the next
 release pull request does not change, so this is only for a one-off test build; releases go through the release pull
 request and Promote.
+
+## Releases made on a PC (this fork)
+
+The fork's releases (eumarcodev/Hookshot) have no release workflow running: their player files are made on a PC by
+`scripts/release_fork.py`, from a clean worktree of the pushed tag, as the workflows above would make them. The setup,
+the Builder and the AppImage download from and update against the fork's GitHub releases.
+
+```
+git tag vX.Y.Z <commit> && git push origin vX.Y.Z
+gh release create vX.Y.Z --verify-tag --latest --title vX.Y.Z --notes-file <notes>   (or let --upload make it)
+python -I scripts/release_fork.py windows vX.Y.Z --upload   (setup, Builder parts: .NET SDK and an installed Builder)
+python -I scripts/release_fork.py linux vX.Y.Z --upload     (the AppImage in WSL's Docker: Ubuntu 22.04, as CI)
+```
+
+- **windows** takes the Python, emsdk, CPM and wgpu-native parts, the play profile and third_party's prebuilt files from an
+  installed Builder (`--reference`; default: the one `%LOCALAPPDATA%\HookshotBuilder\versions\current.txt` names), where
+  the workflow took them from the previous release. Parts that did not change keep their SHA-256 and are not uploaded again.
+- **linux** builds in a clone in the WSL distribution's own file system (`~/hookshot-release`; `--wsl <name>`), where the
+  deps are kept between releases (the first run builds them).
+- **--upload** (gh signed in with write access): new parts to the `builder-parts` and `linux-parts` prereleases, then the
+  files, a `<file>.sha256` beside each and `SHA256SUMS` to the tag's release.
+- `--from <commit>` makes a trial build of a commit under the tag's name, never uploaded. Out:
+  `.dev/release/<tag>/dist` (`dist/linux` for the AppImage). No game data is involved.
 
 ## Hotfixes
 
