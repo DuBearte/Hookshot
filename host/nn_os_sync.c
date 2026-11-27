@@ -255,7 +255,8 @@ static Obj *obj(uint64_t key, int kind) {
     if (kind == K_MUTEX && key && hos_ab_value("HOS_MUTEX_IX", mx_ix_on())) return obj_mutex_ix(key);
     return obj_nockpt(key, kind);
 }
-/* (a fork's code, GPL-3.0; HOS_MUTEX_IX=1, off by default) A mutex's host object found by an index kept in its
+/* (a fork's code, GPL-3.0; on by default, HOS_MUTEX_IX=0 turns it off: +6 to +14 % fps CPU-bound in Kokiri Forest and
+   Hyrule Field, RX 6600 XT / Ryzen 7 5700G, PR #25) A mutex's host object found by an index kept in its
    nn::os::MutexType + 8, the SDK's nesting-count word, unused here (the count is Obj::count). Checked against Obj::key and
    Obj::kind, so a copied, zeroed or reused mutex falls back to obj_nockpt and is numbered again. Only for obj's nn::os
    calls: obj_nockpt, used under host locks, stays as it was */
@@ -268,7 +269,7 @@ static volatile long mx_next = 1;
 static int mx_ix_used;
 static int mx_ix_on(void) {
     static int v = -1;
-    if (v < 0) v = env_on("HOS_MUTEX_IX");
+    if (v < 0) v = env_on_or("HOS_MUTEX_IX", 1) ? 1 : 0;
     return v;
 }
 static Obj *obj_mutex_ix(uint64_t key) {

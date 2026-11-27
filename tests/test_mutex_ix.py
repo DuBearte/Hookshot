@@ -1,6 +1,6 @@
 """A guest mutex's host object found by the index in its nesting-count word (HOS_MUTEX_IX), never another's, game-free.
 
-host/nn_os_sync.c's obj_mutex_ix (HOS_MUTEX_IX=1, or the A/B's side with HOS_AB=HOS_MUTEX_IX=1) keeps an index in the
+host/nn_os_sync.c's obj_mutex_ix (on by default; HOS_MUTEX_IX=0, or the A/B's side with HOS_AB=HOS_MUTEX_IX=0, turns it off) keeps an index in the
 guest nn::os::MutexType + 8 and finds the host object through it, checked against the object's key and kind; anything
 else falls back to the lookup table (obj_nockpt) and is numbered again. The fixture runs the real obj_mutex_ix and its
 statics cut from the source over a stub guest memory and a stub table (each key its own object, counted):
@@ -98,6 +98,9 @@ def main():
     # (wired: obj asks the A/B for the switch at each lookup, and FinalizeMutex clears the word once an index was written)
     if 'hos_ab_value("HOS_MUTEX_IX", mx_ix_on())' not in block(src, "static Obj *obj(uint64_t key, int kind) {"):
         raise SystemExit("FAIL: obj no longer asks hos_ab_value for HOS_MUTEX_IX at each mutex lookup")
+    # (on by default: measured +6 to +14 % fps CPU-bound, PR #25; HOS_MUTEX_IX=0 turns it off)
+    if 'env_on_or("HOS_MUTEX_IX", 1)' not in block(src, "static int mx_ix_on(void) {"):
+        raise SystemExit("FAIL: HOS_MUTEX_IX is no longer on by default (mx_ix_on reads env_on_or(\"HOS_MUTEX_IX\", 1))")
     fin = block(src, "HLE(_ZN2nn2os13FinalizeMutexEPNS0_9MutexTypeE)")
     if "__atomic_load_n(&mx_ix_used, __ATOMIC_RELAXED)" not in fin or "MX_IX_OFFSET" not in fin:
         raise SystemExit("FAIL: FinalizeMutex no longer clears the index word once one was written (mx_ix_used)")
